@@ -19,15 +19,11 @@ class GMM:
         self.init_pi_random = init_pi_random
 
         # for plot update
-        self.contours = []
-        self.scatters = []
         self.ax, self.fig = None, None
-        self.hfig = None
         self.plot_data = {
                 'contourX': [],
                 'contourY': [],
                 'contourZ': [],
-                'scatter': None,
                 'pcaData': None,
                 'pcaV': None,
             }
@@ -128,7 +124,8 @@ class GMM:
             log_likelihoods = {}
             for k in self.k:
                 log_likelihoods[k] = self.fit_k(k, plot=False)
-            
+
+            print(log_likelihoods)            
             self.plot_likelihoods(log_likelihoods)
 
             # get input
@@ -155,91 +152,83 @@ class GMM:
         plt.show()
 
     def get_graph(self, k, step):
-        if k == 1: 
+        if self.dimension == 1: 
+            print("No plot for 1D dimension")
             return 
-        plt.ion()
-        # clrs = sns.color_palette('viridis', n_colors=self.mu.shape[0])  # a list of RGB tuples
+        
+        # colors
         clrs = iter(cm.rainbow(np.linspace(0, 1, self.mu.shape[0])))
         
+        # get plot data 
         if self.dimension == 2:
             plot_data = self.data 
             plot_mu = self.mu
             plot_sigma = self.sigma
-        else: 
+        elif self.dimension > 2: 
             if step == 0:
                 pca = PCA(n_components=2)
                 self.plot_data['pcaData'] = pca.fit_transform(self.data)
-                self.plot_data['pcaV'] = pca.components_
+                self.plot_data['pcaV'] = [pca.components_, pca.mean_] # transformation matrix to turn to 2D
 
-            V = self.plot_data['pcaV']
+            # get mu and sigma in 2D
+            V = self.plot_data['pcaV'][0]
             plot_data = self.plot_data['pcaData']
             plot_mu = np.zeros((self.mu.shape[0], 2))
             for i in range(self.mu.shape[0]):
-                plot_mu[i] = np.dot(V, self.mu[i])
+                plot_mu[i] = np.dot(V, (self.mu[i] - self.plot_data['pcaV'][1]))
             # https://stats.stackexchange.com/questions/484094/projecting-a-covariance-matrix-to-a-lower-dimensional-space?utm_source=pocket_mylist&fbclid=IwAR0Px6ySM2DhepQKbV5SxsankWyY1vdZyLW1FBO09_iTW9ZHCji4KsKy_-E
             plot_sigma = np.zeros((self.sigma.shape[0], 2, 2))
             for i in range(self.sigma.shape[0]):
                 # print(V.shape, self.sigma[i].shape, V.T.shape)
                 plot_sigma[i] = np.dot(np.dot(V, self.sigma[i]), V.T)
 
+
         if step == 0:
+            plt.ion()
             self.fig, self.ax = plt.subplots(figsize=(10, 10))
-            self.plot_data['scatter'] = self.ax.scatter(plot_data[:, 0], plot_data[:, 1], c=self.responsibilities.argmax(axis=1), cmap='viridis')
-            # do some calculation
             
+            # don't need to repeat this calculation for every iter
             for i in range(self.mu.shape[0]):
+                # this takes too much time
                 # self.plot_data['contourZ'].append(np.dstack(np.meshgrid(np.sort(plot_data[:, 0]), np.sort(plot_data[:, 1]))))
                 # self.plot_data['contourX'].append(np.sort(plot_data[:, 0]))
                 # self.plot_data['contourY'].append(np.sort(plot_data[:, 1]))
                 
+                # so use linspace
                 X = np.linspace(np.min(plot_data[:, 0]), np.max(plot_data[:, 0]))
                 Y = np.linspace(np.min(plot_data[:, 1]), np.max(plot_data[:, 1]))
                 X, Y = np.meshgrid(X, Y)
                 self.plot_data['contourZ'].append(np.dstack((X, Y)))
-                self.plot_data['contourX'].append(X)
+                self.plot_data['contourX'].append(X)    
                 self.plot_data['contourY'].append(Y)
 
 
         if step != 0:
-            # remove prev contour
-            for contour in self.contours:
-                for coll in contour.collections: 
-                    plt.gca().collections.remove(coll) 
-
-            for scatter in self.scatters:
-                scatter.remove()
-
-            self.plot_data['scatter'].remove()
-            self.plot_data['scatter'] = self.ax.scatter(plot_data[:, 0], plot_data[:, 1], c=self.responsibilities.argmax(axis=1), cmap='viridis')
-            
-            self.contours = []
-            self.scatters = []
-
+            # remove old contours
+            plt.cla()
+        
+        # plot data
+        self.ax.scatter(plot_data[:, 0], plot_data[:, 1], c=self.responsibilities.argmax(axis=1), cmap='viridis')
         
         # this takes the most time
         for i in range(self.mu.shape[0]):
             color = next(clrs)
             normal_dist = stats.multivariate_normal(plot_mu[i], plot_sigma[i])
-            contour = self.ax.contour(self.plot_data['contourX'][i], self.plot_data['contourY'][i], normal_dist.pdf(self.plot_data['contourZ'][i]), colors=[color], alpha=0.5)
-            scatter = self.ax.scatter(plot_mu[i, 0], plot_mu[i, 1], color=color, s=100)
-            self.contours.append(contour)
-            self.scatters.append(scatter)
-
+            self.ax.contour(self.plot_data['contourX'][i], self.plot_data['contourY'][i], normal_dist.pdf(self.plot_data['contourZ'][i]), colors=[color], alpha=0.5)
+            self.ax.scatter(plot_mu[i, 0], plot_mu[i, 1], color=color, s=100)
 
         # plt.savefig(f"graph_{k}.png", bbox_inches='tight') 
         if step == 0: 
             plt.show()
         else:
-            # plt.draw()
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
 
+        # turn off interactive mode for last iter
         if step == (self.max_iter-1):
             plt.ioff()
             plt.show()
             
-
-
 # def compare_sklearn(data, k=[2, 3, 4, 5, 6, 7, 8, 9, 10]):
 #     from sklearn.mixture import GaussianMixture
 
@@ -255,11 +244,11 @@ class GMM:
 
 if __name__ == "__main__":
     # Load data
-    data = pd.read_csv("data3D.txt", sep=" ", header=None)
+    data = pd.read_csv("data6D.txt", sep=" ", header=None)
     data = data.values
 
     # compare_sklearn(data, k=[2, 3, 4, 5, 6, 7, 8, 9, 10])
     gmm = GMM(data, k=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], max_iter=100, init_pi_random=True)
-    print(gmm.fit())
+    gmm.fit()
 
 
