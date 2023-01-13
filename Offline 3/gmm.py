@@ -111,7 +111,6 @@ class GMM:
         print("INITIAL: sigma: ", self.sigma, " mu: ", self.mu)
         print(f"===============> FOR SOURCES = {k}")
 
-        best_score = -np.inf
         for i in range(self.max_iter):
             self.E_step()
             # print("After E: ", self.sigma, " ; ", self.mu)
@@ -120,9 +119,7 @@ class GMM:
             # print("After M: ", self.sigma, " ; ", self.mu)
             log_likelihood = self.log_likelihood()
             if verbose: print(f"Sources: {k}, Iteration: {i}, Log-likelihood: {log_likelihood}")
-            if log_likelihood > best_score:
-                if plot: self.get_graph(k, step=i)
-                best_score = log_likelihood
+            if plot: self.get_graph(k, step=i)
 
         return log_likelihood
 
@@ -191,9 +188,16 @@ class GMM:
             # do some calculation
             
             for i in range(self.mu.shape[0]):
-                self.plot_data['contourZ'].append(np.dstack(np.meshgrid(np.sort(plot_data[:, 0]), np.sort(plot_data[:, 1]))))
-                self.plot_data['contourX'].append(np.sort(plot_data[:, 0]))
-                self.plot_data['contourY'].append(np.sort(plot_data[:, 1]))
+                # self.plot_data['contourZ'].append(np.dstack(np.meshgrid(np.sort(plot_data[:, 0]), np.sort(plot_data[:, 1]))))
+                # self.plot_data['contourX'].append(np.sort(plot_data[:, 0]))
+                # self.plot_data['contourY'].append(np.sort(plot_data[:, 1]))
+                
+                X = np.linspace(np.min(plot_data[:, 0]), np.max(plot_data[:, 0]))
+                Y = np.linspace(np.min(plot_data[:, 1]), np.max(plot_data[:, 1]))
+                X, Y = np.meshgrid(X, Y)
+                self.plot_data['contourZ'].append(np.dstack((X, Y)))
+                self.plot_data['contourX'].append(X)
+                self.plot_data['contourY'].append(Y)
 
 
         if step != 0:
@@ -212,7 +216,6 @@ class GMM:
             self.scatters = []
 
         
-        start = time.time()
         # this takes the most time
         for i in range(self.mu.shape[0]):
             color = next(clrs)
@@ -221,7 +224,6 @@ class GMM:
             scatter = self.ax.scatter(plot_mu[i, 0], plot_mu[i, 1], color=color, s=100)
             self.contours.append(contour)
             self.scatters.append(scatter)
-        print("STOP 2: ", time.time() - start)
 
 
         # plt.savefig(f"graph_{k}.png", bbox_inches='tight') 
@@ -231,6 +233,10 @@ class GMM:
             # plt.draw()
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
+
+        if step == (self.max_iter-1):
+            plt.ioff()
+            plt.show()
             
 
 
