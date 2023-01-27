@@ -1,0 +1,9 @@
+epochs: 1000
+num_class: 5
+model:
+  - [Linear, [4, 16]]
+  - [Linear, [16, 32]]
+  - [Linear, [32, 16]]
+  - [Linear, [16, 8]]
+  - [Linear, [8, 5]] # num_class here
+  - [Softmax, []]
