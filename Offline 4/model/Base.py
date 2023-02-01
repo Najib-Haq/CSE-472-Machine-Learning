@@ -1,12 +1,12 @@
 import numpy as np
 
-from utils import *
 
 class Base:
     def __init__(self):
         self.params = {}
         self.state_dict = {}
         self.grads = {}
+        self.cache = {} # keep information from forward pass needed for backward pass
         self.name = "Base"
 
     def __str__(self):
