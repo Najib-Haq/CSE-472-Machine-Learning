@@ -1,29 +1,60 @@
 import numpy as np
+import pandas as pd
 
-def cross_entropy_loss(y_true, y_pred):
-    # TODO: check
-    return np.sum(-np.sum(y_true * np.log(y_pred), axis=1))
+def split_dataset(parent_dir="NumtaDB_with_aug", validation_percentage=0.2):
+    df1 = pd.read_csv(f"{parent_dir}/training-a.csv")
+    df2 = pd.read_csv(f"{parent_dir}/training-b.csv")
+    df3 = pd.read_csv(f"{parent_dir}/training-c.csv")
+    df4 = pd.read_csv(f"{parent_dir}/training-d.csv")
 
-def accuracy(y_true, y_pred):
-    return np.mean(y_true == y_pred)
+    df = pd.concat([df1, df2, df3], ignore_index=True)
 
-def precision_score(y_true, y_pred, class_label):
-    tp = np.sum((y_true == class_label) & (y_pred == class_label))
-    fp = np.sum((y_true != class_label) & (y_pred == class_label))
-    return tp / (tp + fp)
+    df['split_col'] = df['database name original'] + '_' + df['digit'].astype(str)
+    df = df.sample(frac=1) # shuffle
 
-def recall_score(y_true, y_pred, class_label):
-    tp = np.sum((y_true == class_label) & (y_pred == class_label))
-    fn = np.sum((y_true == class_label) & (y_pred != class_label))
-    return tp / (tp + fn)
+    split_col = df['split_col'].unique().tolist()
+    train_indexes = []
+    for cat in split_col:
+        indexes = df[df['split_col'] == cat].index.tolist()
+        train_indexes.extend(indexes[:int(len(indexes) * (1 - validation_percentage))])
+    train_df = df.loc[train_indexes]
+    val_df = df.drop(train_indexes)
+    print("Train: ", train_df.shape, "; Valid: ", val_df.shape)
 
-def f1_score(y_true, y_pred, class_label):
-    precision = precision_score(y_true, y_pred, class_label)
-    recall = recall_score(y_true, y_pred, class_label)
-    return 2 * precision * recall / (precision + recall)
-
-def macro_f1(y_true, y_pred, num_classes):
-    # TODO: doing nanmean here
-    return np.nanmean([f1_score(y_true, y_pred, cls) for cls in range(num_classes)])
+    # save csv
+    train_df.to_csv("train.csv", index=False)
+    val_df.to_csv("val.csv", index=False)
+    return train_df, val_df
 
 
+def one_hot_encoding(y, num_class):
+    bs = y.shape[0]
+    label = np.zeros((bs, num_class))
+    label[np.arange(bs), y] = 1
+    return label
+
+def set_seed(seed):
+    np.random.seed(seed)
+
+
+class AverageMeter(object):
+    """Computes and stores the average and current value."""
+
+    def __init__(self, name):
+        self.name = name
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def reset(self):
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
+        self.count = 0
+
+    def update(self, val, n=1):
+        self.val = val
+        self.sum += val * n
+        self.count += n
+        self.avg = self.sum / self.count

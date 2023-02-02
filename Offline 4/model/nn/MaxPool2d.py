@@ -14,8 +14,9 @@ class MaxPool2D(Base):
 
     def forward(self, X):
         N, C, H, W = X.shape
-        self.cache['X_shape'] = X.shape
-        self.cache['X_strides'] = X.strides
+        if self.trainable:
+            self.cache['X_shape'] = X.shape
+            self.cache['X_strides'] = X.strides
         kernel_size, stride = self.params["kernel_size"], self.params["stride"]
 
         # output shape
@@ -32,7 +33,7 @@ class MaxPool2D(Base):
 
         # max pooling
         output = np.max(strided_X, axis=(4, 5))
-        self.cache['strided_X'] = strided_X
+        if self.trainable: self.cache['strided_X'] = strided_X
         return output
 
     def backward(self, dL_dy, lr):
@@ -54,7 +55,7 @@ class MaxPool2D(Base):
 
         # reshape to original shape
         strided_X_maxes = strided_X_maxes.reshape(strided_X.shape)
-        print(strided_X_maxes)
+        # print(strided_X_maxes)
 
         dL_dX = np.zeros(self.cache['X_shape'])
         

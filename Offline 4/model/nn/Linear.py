@@ -30,7 +30,7 @@ class Linear(Base):
         W shape is (out_features, in_features)
         so the output shape is (N, out_features)
         '''
-        self.cache['X'] = X
+        if self.trainable: self.cache['X'] = X
         output = np.dot(X, self.state_dict["weight"].T)
         if self.params["bias"]: output += self.state_dict["bias"]
         return output

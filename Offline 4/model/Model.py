@@ -14,7 +14,8 @@ class Model:
         else: self.layers = model_layers
 
     def forward(self, X):
-        for layer in self.layers:
+        for i, layer in enumerate(self.layers):
+            # print(i, X.shape)
             X = layer(X)
         return X
 
@@ -41,9 +42,9 @@ class Model:
             params = layer[1]
 
             if name == "Conv2D":
-                model.append(Conv2D(**params))
+                model.append(Conv2D(*params))
             elif name == "MaxPool2D":
-                model.append(MaxPool2D(**params))
+                model.append(MaxPool2D(*params))
             elif name == "Flatten":
                 model.append(Flatten())
             elif name == "Linear":
@@ -68,4 +69,14 @@ class Model:
         for i, layer in enumerate(self.layers):
             layer.state_dict = params[i]
         print("Successfully loaded from " + path)
+
+    # makes model trainable -> stores cache
+    def train(self):
+        for layer in self.layers:
+            layer.trainable = True
+
+    # makes model untrainable -> doesnt store cache
+    def eval(self):
+        for layer in self.layers:
+            layer.trainable = False
         

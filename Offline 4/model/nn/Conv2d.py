@@ -72,10 +72,11 @@ class Conv2D(Base):
         if bias:
             output += self.state_dict["bias"][np.newaxis, :, np.newaxis, np.newaxis]  
         
-        self.cache = {
-            "strided_X": strided_X,
-            "X_shape": X.shape
-        }
+        if self.trainable:
+            self.cache = {
+                "strided_X": strided_X,
+                "X_shape": X.shape
+            }
 
         return output
 

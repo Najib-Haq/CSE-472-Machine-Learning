@@ -2,11 +2,12 @@ import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
+import math
 
 from dataset.augments import rotate, blur, get_number_bb
 
 class Dataset:
-    def __init__(self, directory, df, label_col, img_shape=(64, 64), aug=False, mode='train', use_bbox=False, reverse=True):
+    def __init__(self, directory, df, label_col, config, mode='train'):
         '''
         directory = parent directory of the dataset
         '''
@@ -14,10 +15,7 @@ class Dataset:
         self.df = df
         self.label_col = label_col
         self.mode = mode
-        self.img_shape = img_shape
-        self.aug = aug
-        self.use_bbox = use_bbox
-        self.reverse = reverse
+        self.config = config
 
     def __len__(self):
         return len(self.df)
@@ -35,15 +33,16 @@ class Dataset:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # use only bounding box
-        if self.use_bbox: image = get_number_bb(image)
+        if self.config['use_bbox']: image = get_number_bb(image)
         # reverse
-        if self.reverse: image = 255 - image
+        if self.config['reverse']: image = 255 - image
         # use probabilistic augmentation
-        if self.aug: image = self.augment(image)
+        if self.config['aug'] and self.mode == 'train': image = self.augment(image)
 
         # resize and normalize
-        image = cv2.resize(image, self.img_shape, interpolation = cv2.INTER_AREA)
+        image = cv2.resize(image, (self.config['img_shape'][0], self.config['img_shape'][1]), interpolation = cv2.INTER_AREA)
         image = image / 255.0
+        image = image.transpose(2, 0, 1)
         
         if self.mode in ["train", "valid"] : return image, row[self.label_col]
         else: return image
@@ -62,6 +61,9 @@ class DataLoader:
             print("Shuffling Dataset. ")
             self.dataset.df = self.dataset.df.sample(frac=1).reset_index(drop=True)
         return self
+
+    def __len__(self):
+        return math.ceil(len(self.dataset)/self.batch_size)
 
     def __next__(self):
         if self.idx >= len(self.dataset):
@@ -86,7 +88,7 @@ class DataLoader:
 
 
     
-def check_dataset(train_dataset, valid_dataset):
+def check_dataset(train_dataset, valid_dataset, save_dir):
     train_idx = np.random.randint(0, len(train_dataset))
     valid_idx = np.random.randint(0, len(valid_dataset))
 
@@ -94,11 +96,13 @@ def check_dataset(train_dataset, valid_dataset):
     valid_image, valid_label = valid_dataset[valid_idx]
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-    ax[0].imshow(train_image)
+    ax[0].imshow(train_image.transpose(1, 2, 0))
     ax[0].set_title(f"Train[{train_idx}]: {train_label}")
-    ax[1].imshow(valid_image)
+    ax[1].imshow(valid_image.transpose(1, 2, 0))
     ax[1].set_title(f"Valid[{valid_idx}]: {valid_label}")
 
-    plt.show()
+    # save as image
+    fig.savefig(f'{save_dir}/dataset.png', dpi=300, bbox_inches='tight')
+    # plt.show()
 
 

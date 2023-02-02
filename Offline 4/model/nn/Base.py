@@ -8,6 +8,7 @@ class Base:
         self.grads = {}
         self.cache = {} # keep information from forward pass needed for backward pass
         self.name = "Base"
+        self.trainable = True
 
     def __str__(self):
         return self.name + "(" + str(self.params) + ")"

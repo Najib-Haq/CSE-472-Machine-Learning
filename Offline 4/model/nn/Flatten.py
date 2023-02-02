@@ -8,7 +8,7 @@ class Flatten(Base):
         self.name = "Flatten"
 
     def forward(self, X):
-        self.cache['X_shape'] = X.shape
+        if self.trainable: self.cache['X_shape'] = X.shape
         output = X.reshape(X.shape[0], -1)
         return output
 

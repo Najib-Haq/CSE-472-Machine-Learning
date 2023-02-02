@@ -1,9 +1,27 @@
-epochs: 1000
-num_class: 5
+epochs: 200
+num_class: 10
+output_dir: output
+debug: false
 model:
-  - [Linear, [4, 16]]
-  - [Linear, [16, 32]]
-  - [Linear, [32, 16]]
-  - [Linear, [16, 8]]
-  - [Linear, [8, 5]] # num_class here
+  - [Conv2D, [3, 32, 5, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+  - [ReLU, []] # (64 - 5)/1 + 1 = 60
+  - [Conv2D, [32, 64, 5, 2]] # 26
+  - [ReLU, []] # 26
+  - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
+  - [Conv2D, [64, 64, 3, 1]] # (13 - 3) + 1 = 11
+  - [ReLU, []] # 11
+  - [Conv2D, [64, 64, 3, 2]] # (11 - 3)//2 + 1 = 5
+  - [ReLU, []] # 5
+  - [Flatten, []] # 64 * 5 * 5
+  - [Linear, [1600, 1024]] # 
+  - [ReLU, []] # 20
+  - [Linear, [1024, 512]]
+  - [ReLU, []] # 20
+  - [Linear, [512, 10]]
   - [Softmax, []]
+augment:
+  img_shape : [64, 64]
+  use_bbox : false
+  reverse : false
+  aug : false
+
