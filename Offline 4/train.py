@@ -25,19 +25,19 @@ if __name__ == "__main__":
     print(model)
 
     # make dataset
-    train_df, valid_df = split_dataset('NumtaDB_with_aug', validation_percentage=0.2)
+    train_df, valid_df = split_dataset(config['data_dir'], validation_percentage=0.2)
     print("Train: ", train_df.shape, "; Valid: ", valid_df.shape)
     
     if config['debug']:
         train_df = train_df[:100]
         valid_df = valid_df[:100]
 
-    train_dataset = Dataset('NumtaDB_with_aug', train_df, label_col='digit', mode='train', config=config['augment'])
-    valid_dataset = Dataset('NumtaDB_with_aug', valid_df, label_col='digit', mode='valid', config=config['augment'])
+    train_dataset = Dataset(config['data_dir'], train_df, label_col='digit', mode='train', config=config['augment'])
+    valid_dataset = Dataset(config['data_dir'], valid_df, label_col='digit', mode='valid', config=config['augment'])
     check_dataset(train_dataset, valid_dataset, save_dir=config['output_dir'])
 
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=4, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=config['train_batch'], shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=config['valid_batch'], shuffle=False)
 
     # train
     fit_model(model, train_loader, valid_loader, config)

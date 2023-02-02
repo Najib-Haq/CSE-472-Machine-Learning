@@ -1,6 +1,9 @@
 epochs: 200
 num_class: 10
+data_dir: 'numta'
 output_dir: output
+train_batch: 32
+valid_batch: 32
 debug: false
 model:
   - [Conv2D, [3, 32, 5, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
