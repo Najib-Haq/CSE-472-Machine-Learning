@@ -38,21 +38,21 @@ class MaxPool2D(Base):
 
         # max pooling
         output = np.max(strided_X, axis=(4, 5))
-        print("X Strides: ", X.strides)
         self.cache['strided_X'] = strided_X
         return output
 
-    def backward(self, dL_dy):
+    def backward(self, dL_dy, lr):
         N, C, H_out, W_out = dL_dy.shape
         kernel_size, stride = self.params["kernel_size"], self.params["stride"]
 
         # get cached strided_X
         strided_X = self.cache['strided_X']
-        reshaped_strided_X = strided_X.reshape(N, C, H_out, W_out, -1) # need to do this as cannot get max from multiple axis
+
+        reshaped_strided_X = strided_X.reshape((N, C, H_out, W_out, -1)) # need to do this as cannot get max from multiple axis
         argmaxes = reshaped_strided_X.argmax(axis=-1)
         a1, a2, a3, a4 = np.indices((N, C, H_out, W_out)) # indices of axies
         argmaxes_indices = (a1, a2, a3, a4, argmaxes)
-
+        
         # set to 1 and then multiply with gradient
         strided_X_maxes = np.zeros_like(reshaped_strided_X)
         strided_X_maxes[argmaxes_indices] = 1
@@ -60,23 +60,18 @@ class MaxPool2D(Base):
 
         # reshape to original shape
         strided_X_maxes = strided_X_maxes.reshape(strided_X.shape)
-        print("Strided X Maxes Strides: ", strided_X_maxes.strides)
+        print(strided_X_maxes)
 
-        # now go back to original, hopefully this maps back correctly
-        N_strides, C_out_strides, H_strides, W_strides = self.cache['X_strides']
-        dL_dX = np.lib.stride_tricks.as_strided(
-            strided_X_maxes,
-            shape=self.cache['X_shape'],
-            strides = (72, 32, 16, 8),
-            # strides=(N_strides, C_out_strides, stride * H_strides, stride * W_strides)
-        )
+        dL_dX = np.zeros(self.cache['X_shape'])
         
-        print("dL_dX : ", dL_dX)
+        for i in range(H_out):
+            for j in range(W_out):
+                dL_dX[:,:,i*stride:i*stride+kernel_size, j*stride:j*stride+kernel_size] += strided_X_maxes[:,:,i,j]
+        
         return dL_dX
 
-
 if __name__ == "__main__":
-    np.random.seed(42)
+    np.random.seed(142)
     mp = MaxPool2D(2, 1)
     X = np.random.rand(1,1,3,3)
     out = mp.forward(X)
@@ -86,3 +81,4 @@ if __name__ == "__main__":
     print("dL_dy: ", dL_dy)
     dL_dX = mp.backward(dL_dy)
     print("Backward: ", dL_dX.shape)
+    print("dL_dX: ", dL_dX)

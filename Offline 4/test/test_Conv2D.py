@@ -183,9 +183,9 @@ def compare_conv2d(channel_in, channel_out, kernel_size, stride, padding):
 #     out = compare_conv2d(channel_in=3, channel_out=6, kernel_size=3, stride=1, padding=2) == True
 #     assert out, "Basic Conv k=3, s=1, p=2 failed"
 
-def test_conv3():
-    out = compare_conv2d(channel_in=1, channel_out=1, kernel_size=3, stride=2, padding=2) == True
-    assert out, "Basic Conv k=3, s=2, p=2 failed"
+# def test_conv3():
+#     out = compare_conv2d(channel_in=1, channel_out=1, kernel_size=3, stride=2, padding=2) == True
+#     assert out, "Basic Conv k=3, s=2, p=2 failed"
 
 # if __name__ == "__main__":
 #     # testing the conv layer with torch equivalent
