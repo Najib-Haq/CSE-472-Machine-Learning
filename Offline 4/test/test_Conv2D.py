@@ -112,7 +112,7 @@ class Conv2D2:
 
 
 def compare_conv2d(channel_in, channel_out, kernel_size, stride, padding):
-    h, w = 2, 2
+    h, w = 6, 6
     X = np.random.rand(1, channel_in, h, w)
     X_torch = torch.from_numpy(X.copy()); X_torch.requires_grad = True
     h_out = (h + 2 * padding - kernel_size) // stride + 1
@@ -175,14 +175,15 @@ def compare_conv2d(channel_in, channel_out, kernel_size, stride, padding):
     return forward_check and dx_compare and dw_compare and db_compare
 
 
-# def test_conv1():
-#     out = compare_conv2d(channel_in=3, channel_out=6, kernel_size=3, stride=1, padding=0) == True
-#     assert out, "Basic Conv k=2, s=1, p=0 failed"
+def test_conv1():
+    out = compare_conv2d(channel_in=3, channel_out=6, kernel_size=3, stride=1, padding=0) == True
+    assert out, "Basic Conv k=2, s=1, p=0 failed"
     
-# def test_conv2():
-#     out = compare_conv2d(channel_in=3, channel_out=6, kernel_size=3, stride=1, padding=2) == True
-#     assert out, "Basic Conv k=3, s=1, p=2 failed"
+def test_conv2():
+    out = compare_conv2d(channel_in=3, channel_out=6, kernel_size=3, stride=1, padding=2) == True
+    assert out, "Basic Conv k=3, s=1, p=2 failed"
 
+# TODO: CHECK THESE CASES
 # def test_conv3():
 #     out = compare_conv2d(channel_in=1, channel_out=1, kernel_size=3, stride=2, padding=2) == True
 #     assert out, "Basic Conv k=3, s=2, p=2 failed"

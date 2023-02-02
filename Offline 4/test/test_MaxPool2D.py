@@ -30,6 +30,7 @@ def compare_maxpool(channels, kernel_size, stride):
     y_pred_torch = mp_torch(X_torch)
     assert y_pred.shape == y_pred_torch.shape, "Forward Shapes don't match"
     forward_check = np.allclose(y_pred, y_pred_torch.detach().numpy())
+    
     # backward
     dL_dy = np.ones_like(y_pred) #y_pred - y.copy()
     dL_dX = mp.backward(dL_dy, lr=0.01)

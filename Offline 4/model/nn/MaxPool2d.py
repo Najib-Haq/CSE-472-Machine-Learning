@@ -1,12 +1,6 @@
 import numpy as np
-import sys
-from pathlib import Path
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[1]  # YOLOv5 root directory
-if str(ROOT) not in sys.path:
-    sys.path.append(str(ROOT))  # add ROOT to PATH
 
-from nn.Base import Base
+from model.nn.Base import Base
 
 class MaxPool2D(Base):
     def __init__(self, kernel_size, stride=1):

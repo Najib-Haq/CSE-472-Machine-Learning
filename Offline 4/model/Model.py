@@ -1,16 +1,17 @@
 import numpy as np
 import pickle
 
-from model.Conv2d import *
-from model.MaxPool2d import *
-from model.Linear import *
-from model.Activations import *
+from model.nn.Conv2d import *
+from model.nn.MaxPool2d import *
+from model.nn.Linear import *
+from model.nn.Flatten import *
+from model.nn.Activations import *
 
 class Model:
-    def __init__(self, config):
+    def __init__(self, config=False, model_layers=[]):
         self.config = config
-        self.layers = self.create_model()
-        # self.loss = nn.SoftmaxCrossEntropy()
+        if self.config: self.layers = self.create_model()
+        else: self.layers = model_layers
 
     def forward(self, X):
         for layer in self.layers:
@@ -43,15 +44,16 @@ class Model:
                 model.append(Conv2D(**params))
             elif name == "MaxPool2D":
                 model.append(MaxPool2D(**params))
-            # elif name == "Flatten":
-            #     model.append(nn.Flatten())
+            elif name == "Flatten":
+                model.append(Flatten())
             elif name == "Linear":
                 model.append(Linear(params[0], params[1]))
-            # elif name == "ReLU":
-            #     model.append(ReLU())
+            elif name == "ReLU":
+                model.append(ReLU())
             elif name == "Softmax":
                 model.append(Softmax())
         return model
+
 
     def save_model(self, path):
         params = []
