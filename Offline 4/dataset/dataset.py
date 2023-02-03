@@ -3,6 +3,7 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 import math
+from tqdm import tqdm
 
 from dataset.augments import rotate, blur, get_number_bb
 
@@ -17,8 +18,30 @@ class Dataset:
         self.mode = mode
         self.config = config
 
+        self.cache = self.config['cache']
+        self.cache_data = {}
+        if self.cache: self.cache_image()
+
     def __len__(self):
         return len(self.df)
+    
+    def change_image(self, path):
+        image = cv2.imread(path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # use only bounding box
+        if self.config['use_bbox']: image = get_number_bb(image)
+        # reverse
+        if self.config['reverse']: image = 255 - image
+        # resize
+        image = cv2.resize(image, (self.config['img_shape'][0], self.config['img_shape'][1]), interpolation = cv2.INTER_AREA)
+        
+        return image
+    
+    def cache_image(self):
+        for i in tqdm(range(len(self.df))):
+            row = self.df.iloc[i]
+            path = os.path.join(self.directory, row['database name'] + '/' + row['filename'])
+            self.cache_data[path] = self.change_image(path)
 
     def augment(self, image):
         if np.random.rand() < 0.5:
@@ -29,18 +52,17 @@ class Dataset:
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        image = cv2.imread(os.path.join(self.directory, row['database name'] + '/' + row['filename']))
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        path = os.path.join(self.directory, row['database name'] + '/' + row['filename'])
 
-        # use only bounding box
-        if self.config['use_bbox']: image = get_number_bb(image)
-        # reverse
-        if self.config['reverse']: image = 255 - image
+        if self.cache:
+            image = self.cache_data[path]
+        else:
+            image = self.read_image(image, path)
+
         # use probabilistic augmentation
         if self.config['aug'] and self.mode == 'train': image = self.augment(image)
 
         # resize and normalize
-        image = cv2.resize(image, (self.config['img_shape'][0], self.config['img_shape'][1]), interpolation = cv2.INTER_AREA)
         image = image / 255.0
         image = image.transpose(2, 0, 1)
         

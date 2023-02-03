@@ -3,15 +3,16 @@ import numpy as np
 from model.nn.Base import Base
 
 class Linear(Base):
-    def __init__(self, in_features, out_features, bias=True):
+    def __init__(self, in_features, out_features, lazy_init=False, bias=True):
         super().__init__()
         self.name = "Linear"
         self.params = {
-            "in_features": in_features,
+            "in_features": None if lazy_init else in_features,
             "out_features": out_features,
             "bias": bias,
         }
-        self.state_dict = self.initialize_parameters()
+        if not lazy_init: self.state_dict = self.initialize_parameters()
+        else: self.state_dict = {"weight": None}
         self.cache = {}
 
     def initialize_parameters(self):
@@ -30,6 +31,9 @@ class Linear(Base):
         W shape is (out_features, in_features)
         so the output shape is (N, out_features)
         '''
+        if self.state_dict["weight"] is None: 
+            self.params["in_features"] = X.shape[1]
+            self.state_dict = self.initialize_parameters()
         if self.trainable: self.cache['X'] = X
         output = np.dot(X, self.state_dict["weight"].T)
         if self.params["bias"]: output += self.state_dict["bias"]

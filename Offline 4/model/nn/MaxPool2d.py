@@ -11,6 +11,7 @@ class MaxPool2D(Base):
             "stride": stride,
         }
         self.cache = {}
+        self.same_kernel_stride = kernel_size == stride  # fully vectorize when kernel_size == stride
 
     def forward(self, X):
         N, C, H, W = X.shape
@@ -33,10 +34,33 @@ class MaxPool2D(Base):
 
         # max pooling
         output = np.max(strided_X, axis=(4, 5))
-        if self.trainable: self.cache['strided_X'] = strided_X
+        if self.trainable: 
+            if self.same_kernel_stride: 
+                maxes_reshaped_to_original_window = output.repeat(stride, axis=-2).repeat(stride, axis=-1)
+                # pad incase of odd shape
+                pad_h = H - maxes_reshaped_to_original_window.shape[-2]
+                pad_w = W - maxes_reshaped_to_original_window.shape[-1]
+                maxes_reshaped_to_original_window = np.pad(maxes_reshaped_to_original_window, ((0,0), (0,0), (0,pad_h), (0,pad_w)))
+                self.cache['mask'] = np.equal(X, maxes_reshaped_to_original_window)
+            else: self.cache['strided_X'] = strided_X
         return output
 
-    def backward(self, dL_dy, lr):
+    def fully_vectorized_backward(self, dL_dy):
+        # not that much increase :/
+        # https://stackoverflow.com/questions/61954727/max-pooling-backpropagation-using-numpy
+        stride = self.params["stride"]
+        N, C, H, W = self.cache['X_shape']
+        dL_dy_reshaped_to_original_window = dL_dy.repeat(stride, axis=-2).repeat(stride, axis=-1)
+        
+        # pad incase of odd shape
+        pad_h = H - dL_dy_reshaped_to_original_window.shape[-2]
+        pad_w = W - dL_dy_reshaped_to_original_window.shape[-1]
+        dL_dy_reshaped_to_original_window = np.pad(dL_dy_reshaped_to_original_window, ((0,0), (0,0), (0,pad_h), (0,pad_w)))
+        
+        dL_dy_reshaped_to_original_window = np.multiply(dL_dy_reshaped_to_original_window, self.cache['mask'])
+        return dL_dy_reshaped_to_original_window
+
+    def partially_vectorized_backward(self, dL_dy):
         N, C, H_out, W_out = dL_dy.shape
         kernel_size, stride = self.params["kernel_size"], self.params["stride"]
 
@@ -64,6 +88,15 @@ class MaxPool2D(Base):
                 dL_dX[:,:,i*stride:i*stride+kernel_size, j*stride:j*stride+kernel_size] += strided_X_maxes[:,:,i,j]
         
         return dL_dX
+
+
+    def backward(self, dL_dy, lr):
+        if self.same_kernel_stride:
+            return self.fully_vectorized_backward(dL_dy)
+        else:
+            return self.partially_vectorized_backward(dL_dy)
+
+        
 
 if __name__ == "__main__":
     np.random.seed(142)

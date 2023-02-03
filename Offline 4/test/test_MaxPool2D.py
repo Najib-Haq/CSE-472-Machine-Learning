@@ -12,8 +12,7 @@ if str(ROOT) not in sys.path:
 from model.nn.MaxPool2d import MaxPool2D
 np.random.seed(42)
 
-def compare_maxpool(channels, kernel_size, stride):
-    h, w = 6, 6
+def compare_maxpool(channels, kernel_size, stride, h=6, w=6):
     X = np.random.rand(2, channels, h, w)
     print("Input: ", X)
     X_torch = torch.from_numpy(X.copy()); X_torch.requires_grad = True
@@ -64,3 +63,31 @@ def test_mp_k3s1():
 def test_mp_k3s2():
     out = compare_maxpool(channels=3, kernel_size=3, stride=2) == True
     assert out, "Basic MaxPool k=3, s=2 failed"
+
+def test_mp_k3s2_h7():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=2, h=7, w=7) == True
+    assert out, "Basic MaxPool k=3, s=2 failed"
+
+def test_mp_k3s2_h8():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=2, h=8, w=8) == True
+    assert out, "Basic MaxPool k=3, s=2 failed"
+
+def test_mp_k3s2_h9():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=2, h=9, w=9) == True
+    assert out, "Basic MaxPool k=3, s=2 failed"
+
+def test_mp_k3s3_h9():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=3, h=9, w=9) == True
+    assert out, "Basic MaxPool k=3, s=3 failed"
+
+def test_mp_k3s3_h10():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=3, h=10, w=10) == True
+    assert out, "Basic MaxPool k=3, s=3 failed"
+
+def test_mp_k3s3_h11():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=3, h=11, w=11) == True
+    assert out, "Basic MaxPool k=3, s=3 failed"
+
+def test_mp_k3s3_h12():
+    out = compare_maxpool(channels=3, kernel_size=3, stride=3, h=12, w=12) == True
+    assert out, "Basic MaxPool k=3, s=3 failed"

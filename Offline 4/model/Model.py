@@ -48,7 +48,7 @@ class Model:
             elif name == "Flatten":
                 model.append(Flatten())
             elif name == "Linear":
-                model.append(Linear(params[0], params[1]))
+                model.append(Linear(None, params[0], lazy_init=True))
             elif name == "ReLU":
                 model.append(ReLU())
             elif name == "Softmax":

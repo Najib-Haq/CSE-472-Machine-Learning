@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+
 
 def split_dataset(parent_dir="NumtaDB_with_aug", validation_percentage=0.2):
     df1 = pd.read_csv(f"{parent_dir}/training-a.csv")
@@ -7,7 +9,8 @@ def split_dataset(parent_dir="NumtaDB_with_aug", validation_percentage=0.2):
     df3 = pd.read_csv(f"{parent_dir}/training-c.csv")
     df4 = pd.read_csv(f"{parent_dir}/training-d.csv")
 
-    df = pd.concat([df1, df2, df3], ignore_index=True)
+    # df = pd.concat([df1, df2, df3], ignore_index=True)
+    df = df2
 
     df['split_col'] = df['database name original'] + '_' + df['digit'].astype(str)
     df = df.sample(frac=1) # shuffle
@@ -58,3 +61,39 @@ class AverageMeter(object):
         self.sum += val * n
         self.count += n
         self.avg = self.sum / self.count
+
+def update_loggings(loggings, epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1):
+    loggings['epoch'].append(epoch)
+    loggings['train_loss'].append(train_loss)
+    loggings['train_acc'].append(train_acc)
+    loggings['train_f1'].append(train_f1)
+    loggings['val_loss'].append(val_loss)
+    loggings['val_acc'].append(val_acc)
+    loggings['val_f1'].append(val_f1)
+    return loggings
+
+
+def visualize_training(loggings, save_dir):
+    fig, ax = plt.subplots(3, 1, figsize=(15, 10))
+    ax[0].plot(loggings['epoch'], loggings['train_loss'], label='train')
+    ax[0].plot(loggings['epoch'], loggings['val_loss'], label='val')
+    ax[0].set_title('Loss')
+    ax[0].legend()
+    ax[0].grid()
+
+    ax[1].plot(loggings['epoch'], loggings['train_acc'], label='train')
+    ax[1].plot(loggings['epoch'], loggings['val_acc'], label='val')
+    ax[1].set_title('Accuracy')
+    ax[1].legend()
+    ax[1].grid()
+
+    ax[2].plot(loggings['epoch'], loggings['train_f1'], label='train')
+    ax[2].plot(loggings['epoch'], loggings['val_f1'], label='val')
+    ax[2].set_title('F1 Score')
+    ax[2].legend()
+    ax[2].grid()
+
+    plt.legend()
+
+    plt.savefig(f'{save_dir}/metrics.png', bbox_inches='tight')
+    # plt.show()
