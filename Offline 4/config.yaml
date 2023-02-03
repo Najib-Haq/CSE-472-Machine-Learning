@@ -1,30 +1,45 @@
-epochs: 100
+epochs: 10
 num_class: 10
 data_dir: 'numta'
 output_dir: 'output'
 train_batch: 128
-valid_batch: 32
+valid_batch: 128
 lr: 0.001
-debug: false
+debug: true
 model:
-  - [Conv2D, [3, 11, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+  - [Conv2D, [3, 16, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
   - [ReLU, []] 
   - [MaxPool2D, [2, 2]]
-  - [Conv2D, [11, 13, 5, 1, 1]] # 26
+  - [Conv2D, [16, 32, 3, 1, 1]] 
+  - [ReLU, []] 
+  - [MaxPool2D, [2, 2]]
+  - [Conv2D, [32, 32, 3, 1, 1]] 
   - [ReLU, []] # 26
   - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
-  - [Conv2D, [13, 15, 5, 1, 1]] # (13 - 3) + 1 = 11
-  - [ReLU, []] # 11
-  - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
   - [Flatten, []] # 64 * 5 * 5
-  - [Linear, [10]] # 
+  - [Linear, [1024]] # 
+  - [ReLU, []] # 26
+  - [Linear, [512]] # 
+  - [ReLU, []] # 26
+  - [Linear, [10]] #  
   - [Softmax, []]
 augment:
-  img_shape : [64, 64]
-  use_bbox : false
-  reverse : false
-  aug : false
+  img_shape: [64, 64]
+  use_bbox: false
+  reverse: false
+  aug: false
   cache: true
+lr_scheduler:
+  factor: 0.7
+  patience: 2
+use_wandb: false
+wandb:
+  project: "cse472_cnn_scratch"
+  entity: "nexh98" # anonymous
+notebook: ''
+name: 'Model1-Baseline'
+comment: 'Model1-64x64'
+exp: 'Baseline'
 
 
 

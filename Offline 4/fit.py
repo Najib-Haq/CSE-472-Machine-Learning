@@ -6,7 +6,7 @@ from model.Optimizer import SGD
 from model.Loss import CrossEntropyLoss
 from model.Metrics import accuracy, macro_f1
 from model.LRScheduler import ReduceLROnPlateau
-from utils import one_hot_encoding, AverageMeter, update_loggings, visualize_training
+from utils import one_hot_encoding, AverageMeter, update_loggings, visualize_training, update_wandb
 
 def train_one_epoch(model, train_loader, config, optimizer):
     celoss = CrossEntropyLoss()
@@ -61,7 +61,7 @@ def validate_one_epoch(model, val_loader, config):
     return loss_meter.avg, acc_meter.avg, f1_meter.avg
 
 
-def fit_model(model, train_loader, val_loader, config):
+def fit_model(model, train_loader, val_loader, config, wandb_run):
     # save based on macro f1
     best_macro_f1 = 0
 
@@ -76,7 +76,7 @@ def fit_model(model, train_loader, val_loader, config):
     }
 
     optimizer = SGD(lr=config['lr'])
-    scheduler = ReduceLROnPlateau(factor=0.5, patience=4, verbose=1)
+    scheduler = ReduceLROnPlateau(factor=config['lr_scheduler']['factor'], patience=config['lr_scheduler']['patience'], verbose=1)
 
     for epoch in range(config['epochs']):
         model, train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, config, optimizer)
@@ -93,9 +93,16 @@ def fit_model(model, train_loader, val_loader, config):
             model.save_model(f"{config['output_dir']}/best_model_E{epoch}.npy")
 
         loggings = update_loggings(loggings, epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1)
-
+        if config['use_wandb']: update_wandb(epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1, optimizer.lr)
+    
     loggings = pd.DataFrame(loggings)
     loggings.to_csv(f"{config['output_dir']}/logs.csv", index=False)
+    
+    if config['use_wandb']:
+        wandb_run.summary[f"Best VAL MacroF1"] = best_macro_f1
+        wandb_run.summary[f"Best VAL Accuracy"] = loggings['val_acc'].max()
+        wandb_run.summary[f"Best VAL Loss"] = loggings['val_loss'].min()
+        wandb_run.finish()
 
     visualize_training(loggings, config['output_dir'])
 

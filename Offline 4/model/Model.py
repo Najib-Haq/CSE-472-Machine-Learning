@@ -9,14 +9,21 @@ from model.nn.Activations import *
 
 class Model:
     def __init__(self, config=False, model_layers=[]):
-        self.config = config
+        self.config = config['model']
         if self.config: self.layers = self.create_model()
         else: self.layers = model_layers
 
-    def forward(self, X):
+        if config:
+            print("Testing model shapes with random X: ")
+            X = np.random.randn(1, 3, config['augment']['img_shape'][0], config['augment']['img_shape'][1])
+            self.forward(X, debug=True)
+            print('#'*50)
+
+    def forward(self, X, debug=False):
+        if debug: print("Input X: -> \t\t", X.shape)
         for i, layer in enumerate(self.layers):
-            # print(i, X.shape)
             X = layer(X)
+            if debug: print(f"Layer {i}: {layer.name} ->\t", X.shape)
         return X
 
     def backward(self, dL_dy):
@@ -29,7 +36,7 @@ class Model:
         return self.forward(X)
 
     def __str__(self):
-        print_data = ""
+        print_data = "MODEL LAYERS & PARAMETERS: \n"
         for i, layer in enumerate(self.layers):
             print_data += f"Layer {i}: " + str(layer) + "\n"
         return print_data

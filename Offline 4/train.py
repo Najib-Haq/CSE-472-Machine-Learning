@@ -7,7 +7,7 @@ import sys
 
 from dataset.dataset import Dataset, DataLoader, check_dataset
 from model.Model import Model
-from utils import set_seed, split_dataset
+from utils import set_seed, split_dataset, wandb_init
 from fit import *
 
 
@@ -19,9 +19,10 @@ if __name__ == "__main__":
         config = yaml.load(f, Loader=yaml.FullLoader)
     print(config)
     os.makedirs(config['output_dir'], exist_ok=True)
+    wandb_run = wandb_init(config) if config['use_wandb'] else None
 
     # make model
-    model = Model(config['model'])
+    model = Model(config)
     print(model)
 
     # make dataset
@@ -40,6 +41,6 @@ if __name__ == "__main__":
     valid_loader = DataLoader(valid_dataset, batch_size=config['valid_batch'], shuffle=False)
 
     # train
-    fit_model(model, train_loader, valid_loader, config)
+    fit_model(model, train_loader, valid_loader, config, wandb_run)
 
 

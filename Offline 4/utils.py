@@ -3,14 +3,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+def get_near_duplicate_removed_train():
+    # https://www.kaggle.com/code/nexh98/cse-472-offline4-make-dataset/data?scriptVersionId=118126349
+    df1 = pd.read_csv("nd_removed_train_a.csv")
+    df3 = pd.read_csv("nd_removed_train_c.csv")
+
+    df1 = df1[df1.included == True].reset_index(drop=True)
+    df3 = df3[df3.included == True].reset_index(drop=True)
+    return df1, df3
+
 def split_dataset(parent_dir="NumtaDB_with_aug", validation_percentage=0.2):
     df1 = pd.read_csv(f"{parent_dir}/training-a.csv")
     df2 = pd.read_csv(f"{parent_dir}/training-b.csv")
     df3 = pd.read_csv(f"{parent_dir}/training-c.csv")
     df4 = pd.read_csv(f"{parent_dir}/training-d.csv")
 
-    # df = pd.concat([df1, df2, df3], ignore_index=True)
-    df = df2
+    df1, df3 = get_near_duplicate_removed_train()
+    df = pd.concat([df1, df2, df3], ignore_index=True)
+    # df = df2
 
     df['split_col'] = df['database name original'] + '_' + df['digit'].astype(str)
     df = df.sample(frac=1) # shuffle
@@ -97,3 +107,39 @@ def visualize_training(loggings, save_dir):
 
     plt.savefig(f'{save_dir}/metrics.png', bbox_inches='tight')
     # plt.show()
+
+# wandb stuff
+try:
+    import wandb
+except:
+    print("please install wandb if you want to use wandb loggings")
+
+def wandb_init(config):
+    if config['wandb']['entity'] == 'anonymous':
+        print("Anonymouse run wandb")
+        wandb.login(anonymous="must", relogin=True)
+        run = wandb.init(anonymous="allow")
+    else:
+        run = wandb.init(
+            project=config['wandb']['project'], 
+            entity=config['wandb']['entity'],
+            name=config['name'],
+            config=config, 
+            resume="allow",
+        )
+    return run
+
+
+def update_wandb(epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1, lr):
+    wandb.log({
+        'epoch': epoch,
+        'train_loss': train_loss,
+        'train_acc': train_acc,
+        'train_f1': train_f1,
+        'val_loss': val_loss,
+        'val_acc': val_acc,
+        'val_f1': val_f1,
+        'lr': lr
+    })
+
+
