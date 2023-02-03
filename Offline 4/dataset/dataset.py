@@ -38,6 +38,7 @@ class Dataset:
         return image
     
     def cache_image(self):
+        print("Cache Dataset...")
         for i in tqdm(range(len(self.df))):
             row = self.df.iloc[i]
             path = os.path.join(self.directory, row['database name'] + '/' + row['filename'])

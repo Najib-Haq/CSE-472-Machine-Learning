@@ -11,7 +11,7 @@ class ReLU(Base):
         self.cache['X_relu_IDX'] = X>0
         return X*self.cache['X_relu_IDX']
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         return dL_dy*self.cache['X_relu_IDX']
 
 
@@ -28,7 +28,7 @@ class Softmax(Base):
         exp = np.exp(X - np.max(X))
         return exp / np.sum(exp, axis=1, keepdims=True)   
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         '''
         Here derivation has come from cross_ealready has the softmax considered
         '''

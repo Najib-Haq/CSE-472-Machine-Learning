@@ -19,10 +19,10 @@ class Model:
             X = layer(X)
         return X
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         # print("INPUT BACKWARD: ",dL_dy.shape)
         for layer in reversed(self.layers):
-            dL_dy = layer.backward(dL_dy, lr)
+            dL_dy = layer.backward(dL_dy)
         return dL_dy
 
     def __call__(self, X):

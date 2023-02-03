@@ -90,7 +90,7 @@ class MaxPool2D(Base):
         return dL_dX
 
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         if self.same_kernel_stride:
             return self.fully_vectorized_backward(dL_dy)
         else:

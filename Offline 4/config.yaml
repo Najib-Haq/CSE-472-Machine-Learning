@@ -1,9 +1,10 @@
-epochs: 20
+epochs: 100
 num_class: 10
 data_dir: 'numta'
 output_dir: 'output'
-train_batch: 32
+train_batch: 128
 valid_batch: 32
+lr: 0.001
 debug: false
 model:
   - [Conv2D, [3, 11, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
@@ -20,8 +21,8 @@ model:
   - [Softmax, []]
 augment:
   img_shape : [64, 64]
-  use_bbox : true
-  reverse : true
+  use_bbox : false
+  reverse : false
   aug : false
   cache: true
 

@@ -20,8 +20,9 @@ class Base:
         return self.forward(X)
 
     def update_weights(self, lr):
-        for key in self.state_dict:
-            self.state_dict[key] -= lr * self.grads[key]
+        if self.trainable:
+            for key in self.state_dict:
+                self.state_dict[key] -= lr * self.grads[key]
         # print(self.name + " : " , self.state_dict)
 
 class Derived(Base):

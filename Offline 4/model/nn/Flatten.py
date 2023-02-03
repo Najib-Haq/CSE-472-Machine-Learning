@@ -12,6 +12,6 @@ class Flatten(Base):
         output = X.reshape(X.shape[0], -1)
         return output
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         dL_dX = dL_dy.reshape(self.cache['X_shape'])
         return dL_dX

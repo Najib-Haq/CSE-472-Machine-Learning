@@ -39,7 +39,7 @@ class Linear(Base):
         if self.params["bias"]: output += self.state_dict["bias"]
         return output
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         '''
         dL_dy = gradient of the cost with respect to the output of the linear layer -> (bs, out_features)
         '''
@@ -53,6 +53,5 @@ class Linear(Base):
         # update weights and bias
         self.grads = {"weight": dL_dW} 
         if self.params["bias"]: self.grads["bias"] = dL_db
-        self.update_weights(lr)
         
         return dL_dX

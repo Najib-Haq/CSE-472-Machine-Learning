@@ -2,11 +2,13 @@ import numpy as np
 from tqdm import tqdm
 import pandas as pd
 
+from model.Optimizer import SGD
 from model.Loss import CrossEntropyLoss
 from model.Metrics import accuracy, macro_f1
+from model.LRScheduler import ReduceLROnPlateau
 from utils import one_hot_encoding, AverageMeter, update_loggings, visualize_training
 
-def train_one_epoch(model, train_loader, config):
+def train_one_epoch(model, train_loader, config, optimizer):
     celoss = CrossEntropyLoss()
 
     loss_meter = AverageMeter('loss')
@@ -20,7 +22,8 @@ def train_one_epoch(model, train_loader, config):
         
         out = model(images)
         loss = celoss(out, one_hot_labels)
-        model.backward(celoss.get_grad_wrt_softmax(out, one_hot_labels), lr=0.00005)
+        model.backward(celoss.get_grad_wrt_softmax(out, one_hot_labels))
+        optimizer.step(model) # optimizer step
 
         out = np.argmax(out, axis=1)
         acc = accuracy(labels, out)
@@ -59,8 +62,6 @@ def validate_one_epoch(model, val_loader, config):
 
 
 def fit_model(model, train_loader, val_loader, config):
-    num_class = config['num_class']
-
     # save based on macro f1
     best_macro_f1 = 0
 
@@ -74,13 +75,18 @@ def fit_model(model, train_loader, val_loader, config):
         'val_f1': []
     }
 
+    optimizer = SGD(lr=config['lr'])
+    scheduler = ReduceLROnPlateau(factor=0.5, patience=4, verbose=1)
+
     for epoch in range(config['epochs']):
-        model, train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, config)
+        model, train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, config, optimizer)
         val_loss, val_acc, val_f1 = validate_one_epoch(model, val_loader, config)
 
-        print(f"Epoch {epoch+1}/{config['epochs']} => ")
+        print(f"Epoch {epoch+1}/{config['epochs']} => LR {optimizer.lr}")
         print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f} | Train Macro F1: {train_f1:.4f}")
         print(f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f} | Val Macro F1: {val_f1:.4f}")
+
+        scheduler.step(val_f1, optimizer) # reduce lr based on validation f1 performance
 
         if val_f1 > best_macro_f1:
             best_macro_f1 = val_f1

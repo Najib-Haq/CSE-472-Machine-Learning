@@ -80,7 +80,7 @@ class Conv2D(Base):
 
         return output
 
-    def backward(self, dL_dy, lr):
+    def backward(self, dL_dy):
         '''
         dL_dy = gradient of the cost with respect to the output of the conv layer -> (bs, C_out, H, W)
 
@@ -119,6 +119,5 @@ class Conv2D(Base):
         # update parameters
         self.grads['kernels'] = dL_dK
         if bias: self.grads['bias'] = dL_db
-        self.update_weights(lr)
 
         return dL_dX
