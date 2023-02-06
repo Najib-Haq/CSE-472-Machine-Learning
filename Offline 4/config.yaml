@@ -23,6 +23,7 @@ model:
   - [ReLU, []] # 
   - [Linear, [10]] #  
   - [Softmax, []]
+checkpoint_path: false
 augment:
   img_shape: [64, 64]
   use_bbox: true
@@ -30,7 +31,7 @@ augment:
   aug: false
   dilation: false
   opening: false
-  mixup: 0.5
+  mixup: 0.0
   cache: true
 lr_scheduler:
   factor: 0.7

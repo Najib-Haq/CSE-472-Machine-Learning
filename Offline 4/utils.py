@@ -20,6 +20,7 @@ def split_dataset(parent_dir="NumtaDB_with_aug", validation_percentage=0.2):
 
     df1, df3 = get_near_duplicate_removed_train()
     df = pd.concat([df1, df2, df3], ignore_index=True)
+    df['img_path'] = df['database name'] + '/' + df['filename']
     # df = df2
 
     df['split_col'] = df['database name original'] + '_' + df['digit'].astype(str)

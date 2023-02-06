@@ -74,7 +74,7 @@ def compare_layers():
     
     # backward
     dL_dy = y_pred - y.copy()
-    dL_dX = model.backward(dL_dy, lr=0.01)
+    dL_dX = model.backward(dL_dy)
     
     dL_dy_torch = y_pred_torch - torch.from_numpy(y.copy())
     y_pred_torch.backward(dL_dy_torch)
@@ -116,7 +116,7 @@ def compare_layers_withloss():
 
     # backward    
     dL_dy = loss.get_grad_wrt_softmax(y_pred, label)
-    dL_dX = model.backward(dL_dy, lr=0.01)
+    dL_dX = model.backward(dL_dy)
     
     loss_value_torch.backward()
     dL_dX_torch = X_torch.grad

@@ -2,6 +2,7 @@ import numpy as np
 
 from model.nn.Base import Base
 
+
 class Conv2D(Base):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
         super().__init__()
@@ -26,7 +27,7 @@ class Conv2D(Base):
             return {"kernels": kernels, "bias": bias}
         return {"kernels": kernels}
 
-    def generate_strided_tensor(self, X, kernel_size, stride, padding, out_shape):
+    def generate_strided_tensor(self, X, kernel_size, stride, padding, out_shape, strides=None):
         '''
         here kernel_size, stride, padding are tuples of (H, W)
         ''' 
@@ -37,8 +38,9 @@ class Conv2D(Base):
         if padding != (0, 0):
             X = np.pad(X, ((0, 0), (0, 0), (padding[0], padding[0]), (padding[1], padding[1])), mode="constant", constant_values=0)
         
+            
         # get strides of X
-        N_strides, C_out_strides, H_strides, W_strides = X.strides
+        N_strides, C_out_strides, H_strides, W_strides = X.strides if strides is None else strides
         # create a strided tensor
         # use this link to understand: https://towardsdatascience.com/advanced-numpy-master-stride-tricks-with-25-illustrated-exercises-923a9393ab20
         strided_tensor = np.lib.stride_tricks.as_strided(
@@ -75,7 +77,7 @@ class Conv2D(Base):
         if self.trainable:
             self.cache = {
                 "strided_X": strided_X,
-                "X_shape": X.shape
+                "X_shape": (B, C_in, H_in, W_in)
             }
 
         return output
@@ -103,16 +105,27 @@ class Conv2D(Base):
         kernels_rotated = np.rot90(self.state_dict["kernels"], k=2, axes=(2, 3)) # (number of times rotated by 90, k=2)
         # get strided dL_dy windows
         dout_padding = kernel_size - 1 if padding == 0 else kernel_size - 1 - padding
+        # dout_padding = 1
         dout_dilate = stride - 1
         # dilate dL_dy based on stride
         if dout_dilate != 0:
-            dL_dy_dilated = np.insert(dL_dy, range(1, dL_dy.shape[2]), values=0, axis=2) # args - input, index, value, axis
-            dL_dy_dilated = np.insert(dL_dy_dilated, range(1, dL_dy.shape[3]), values=0, axis=3)
+            insertion_indices = list(np.arange(1, dL_dy.shape[2]))*dout_dilate
+            # print(insertion_indices)
+            dL_dy_dilated = np.insert(dL_dy, insertion_indices, values=0, axis=2) # args - input, index, value, axis
+            dL_dy_dilated = np.insert(dL_dy_dilated, insertion_indices, values=0, axis=3)
+
+            # in cases where right and bottom gets ignored, these can be added back by extra padding
+            new_shape_h = (dL_dy_dilated.shape[2] + 2 * dout_padding - kernel_size) // 1 + 1
+            new_shape_w = (dL_dy_dilated.shape[3] + 2 * dout_padding - kernel_size) // 1 + 1
+            if (new_shape_h != self.cache['X_shape'][2]) or (new_shape_w != self.cache['X_shape'][3]):
+                 # pad incase of odd shape
+                pad_h = self.cache['X_shape'][2] - new_shape_h 
+                pad_w = self.cache['X_shape'][3] - new_shape_w 
+                dL_dy_dilated = np.pad(dL_dy_dilated, ((0,0), (0,0), (0,pad_h), (0,pad_w)))
+
         else:
             dL_dy_dilated = dL_dy.copy()
-        # TODO: check if stride is original or this one
-        strided_dL_dy = self.generate_strided_tensor(dL_dy_dilated, (kernel_size, kernel_size), (1, 1), (dout_padding, dout_padding), self.cache['X_shape'])
-        
+        strided_dL_dy = self.generate_strided_tensor(dL_dy_dilated, (kernel_size, kernel_size), (1, 1), (dout_padding, dout_padding), self.cache['X_shape'], strides=None)
         # compute dL_dX
         dL_dX = np.einsum("nohwkl,ockl->nchw", strided_dL_dy, kernels_rotated) # Convolution(padded dL_dy, kernels_rotated)
 
@@ -121,3 +134,4 @@ class Conv2D(Base):
         if bias: self.grads['bias'] = dL_db
 
         return dL_dX
+ 

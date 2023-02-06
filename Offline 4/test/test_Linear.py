@@ -31,7 +31,7 @@ def compare_linear(in_features, out_features):
 
     # backward
     dL_dy = y_pred - y.copy()
-    dL_dX = dense.backward(dL_dy, lr=0.01)
+    dL_dX = dense.backward(dL_dy)
     dL_dW = dense.grads["weight"]
     dL_db = dense.grads["bias"]
 

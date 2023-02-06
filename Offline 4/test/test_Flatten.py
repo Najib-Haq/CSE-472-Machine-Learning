@@ -29,7 +29,7 @@ def compare_flatten(shape):
     
     # backward
     dL_dy = y_pred - y.copy()
-    dL_dX = flat.backward(dL_dy, lr=0.01)
+    dL_dX = flat.backward(dL_dy)
     dL_dy_torch = y_pred_torch - torch.from_numpy(y.copy())
     y_pred_torch.backward(dL_dy_torch)
 

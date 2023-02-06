@@ -30,7 +30,7 @@ def compare_relu(shape):
     
     # backward
     dL_dy = y_pred - y.copy()
-    dL_dX = relu.backward(dL_dy, lr=0.01)
+    dL_dX = relu.backward(dL_dy)
     dL_dy_torch = y_pred_torch - torch.from_numpy(y.copy())
     y_pred_torch.backward(dL_dy_torch)
 
@@ -66,7 +66,7 @@ def compare_softmax(shape):
     print(y, label)
     loss = CrossEntropyLoss()
     dL_dy = loss.get_grad_wrt_softmax(y_pred, label)
-    dL_dX = sm.backward(dL_dy, lr=0.01)
+    dL_dX = sm.backward(dL_dy)
     dL_dy_torch = nn.CrossEntropyLoss()(X_torch, torch.from_numpy(y.copy()).long())
     dL_dy_torch.backward()
 

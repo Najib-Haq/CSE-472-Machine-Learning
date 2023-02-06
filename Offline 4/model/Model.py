@@ -9,7 +9,7 @@ from model.nn.Activations import *
 
 class Model:
     def __init__(self, config=False, model_layers=[]):
-        self.config = config['model']
+        self.config = config['model'] if config else False
         if self.config: self.layers = self.create_model()
         else: self.layers = model_layers
 

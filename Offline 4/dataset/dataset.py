@@ -47,7 +47,7 @@ class Dataset:
         print("Cache Dataset...")
         for i in tqdm(range(len(self.df))):
             row = self.df.iloc[i]
-            path = os.path.join(self.directory, row['database name'] + '/' + row['filename'])
+            path = os.path.join(self.directory, row['img_path'])
             self.cache_data[path] = self.change_image(path)
 
     def augment(self, image):
@@ -59,7 +59,7 @@ class Dataset:
 
     def __getitem__(self, idx):
         row = self.df.iloc[idx]
-        path = os.path.join(self.directory, row['database name'] + '/' + row['filename'])
+        path = os.path.join(self.directory, row['img_path'])
 
         if self.cache:
             image = self.cache_data[path]
@@ -74,7 +74,7 @@ class Dataset:
         image = image.transpose(2, 0, 1)
         
         if self.mode in ["train", "valid"] : return image, row[self.label_col]
-        else: return image
+        else: return image, row['img_path']
 
 
 class DataLoader:
@@ -108,11 +108,14 @@ class DataLoader:
                 if len(batch) == 0: batch = [[], []]
                 batch[0].append(data[0])
                 batch[1].append(data[1])
-            else: batch.append(data)
+            else: 
+                if len(batch) == 0: batch = [[], []]
+                batch[0].append(data[0])
+                batch[1].append(data[1])
             self.idx += 1
 
         if self.dataset.mode in ["train", "valid"]: batch = [np.stack(batch[0]), np.array(batch[1])]
-        else: batch = np.stack(batch)
+        else: batch = [np.stack(batch[0]), batch[1]]
         return batch
 
 
@@ -138,5 +141,18 @@ def check_dataset(train_dataset, valid_dataset, save_dir, from_mixup=False):
     # save as image
     fig.savefig(f'{save_dir}/dataset.png', dpi=300, bbox_inches='tight')
     # plt.show()
+
+def check_test_dataset(test_dataset, save_dir):
+    test_idx = np.random.randint(0, len(test_dataset))
+    test_image, path = test_dataset[test_idx]
+
+    fig, ax = plt.subplots(1, 1, figsize=(10, 5))
+    ax.imshow(test_image.transpose(1, 2, 0))
+    ax.set_title(f"Test[{test_idx}]")
+
+    # save as image
+    fig.savefig(f'{save_dir}/dataset_test.png', dpi=300, bbox_inches='tight')
+    # plt.show()
+
 
 

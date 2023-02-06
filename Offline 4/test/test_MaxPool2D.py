@@ -32,7 +32,7 @@ def compare_maxpool(channels, kernel_size, stride, h=6, w=6):
     
     # backward
     dL_dy = np.ones_like(y_pred) #y_pred - y.copy()
-    dL_dX = mp.backward(dL_dy, lr=0.01)
+    dL_dX = mp.backward(dL_dy)
     dL_dy_torch = torch.ones_like(y_pred_torch) #y_pred_torch - torch.from_numpy(y.copy())
     # print("dL/dy: ", dL_dy)
     y_pred_torch.backward(dL_dy_torch)
