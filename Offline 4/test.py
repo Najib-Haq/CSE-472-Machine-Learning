@@ -61,11 +61,11 @@ def show_results(pred_df, gt_df):
     # calculate metrics
     acc = accuracy(df['GT'], df['Pred'])
     macro_f1_score = macro_f1(df['GT'], df['Pred'])
-    confusion_matrix = confusion_matrix(df['GT'], df['Pred'])
+    # cm_score = confusion_matrix(df['GT'], df['Pred'])
 
     print(f"Accuracy: {acc}")
     print(f"Macro F1: {macro_f1_score}")
-    print(f"Confusion Matrix: {confusion_matrix}")
+    # print(f"Confusion Matrix: {cm_score}")
     
 
 
@@ -76,6 +76,7 @@ if __name__ == "__main__":
     config = parse_arguments()
     df = path_to_csv(config['data_dir'])
     if config['debug']: df = df.sample(frac=1).reset_index(drop=True) #[:100]
+    os.makedirs(config['output_dir'], exist_ok=True)
 
     # make and load model
     model = Model(config)

@@ -8,4 +8,4 @@ def macro_f1(y_true, y_pred):
     return f1_score(y_true, y_pred, average='macro')
 
 def confusion_matrix(y_true, y_pred, labels=None):
-    return confusion_matrix(y_true, y_pred, labels, normalize='true')
+    return confusion_matrix(y_true, y_pred, labels)
