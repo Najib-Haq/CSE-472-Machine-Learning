@@ -6,7 +6,7 @@ from model.Optimizer import SGD
 from model.Loss import CrossEntropyLoss
 from model.Metrics import accuracy, macro_f1
 from model.LRScheduler import ReduceLROnPlateau
-from utils import one_hot_encoding, AverageMeter, update_loggings, visualize_training, update_wandb
+from utils import one_hot_encoding, AverageMeter, mixup, update_loggings, visualize_training, update_wandb
 
 def train_one_epoch(model, train_loader, config, optimizer):
     celoss = CrossEntropyLoss()
@@ -18,7 +18,11 @@ def train_one_epoch(model, train_loader, config, optimizer):
     model.train()
     for step, data in tqdm(enumerate(train_loader), total=len(train_loader)):
         images, labels = data[0], data[1]
-        one_hot_labels = one_hot_encoding(labels, config['num_class'])
+
+        if np.random.rand() < config['augment']['mixup']:
+            images, one_hot_labels = mixup(images, labels, config['num_class'])
+        else:
+            one_hot_labels = one_hot_encoding(labels, config['num_class'])
         
         out = model(images)
         loss = celoss(out, one_hot_labels)

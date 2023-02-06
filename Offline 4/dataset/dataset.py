@@ -28,10 +28,16 @@ class Dataset:
     def change_image(self, path):
         image = cv2.imread(path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # opening
+        if self.config['opening']: image = cv2.morphologyEx(image, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8), iterations=1)
+        
         # use only bounding box
         if self.config['use_bbox']: image = get_number_bb(image)
         # reverse
         if self.config['reverse']: image = 255 - image
+        # dilation
+        if self.config['dilation']: image = cv2.dilate(image, np.ones((5, 5), np.uint8), iterations = 1)
+        
         # resize
         image = cv2.resize(image, (self.config['img_shape'][0], self.config['img_shape'][1]), interpolation = cv2.INTER_AREA)
         
@@ -111,12 +117,17 @@ class DataLoader:
 
 
     
-def check_dataset(train_dataset, valid_dataset, save_dir):
+def check_dataset(train_dataset, valid_dataset, save_dir, from_mixup=False):
     train_idx = np.random.randint(0, len(train_dataset))
     valid_idx = np.random.randint(0, len(valid_dataset))
 
-    train_image, train_label = train_dataset[train_idx]
+    if from_mixup:
+        train_image = train_dataset[0][train_idx]
+        train_label = train_dataset[1][train_idx]
+    else:
+        train_image, train_label = train_dataset[train_idx]
     valid_image, valid_label = valid_dataset[valid_idx]
+
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 5))
     ax[0].imshow(train_image.transpose(1, 2, 0))

@@ -14,20 +14,23 @@ model:
   - [ReLU, []] 
   - [MaxPool2D, [2, 2]]
   - [Conv2D, [32, 32, 3, 1, 1]] 
-  - [ReLU, []] # 26
-  - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
-  - [Flatten, []] # 64 * 5 * 5
+  - [ReLU, []]
+  - [MaxPool2D, [2, 2]] 
+  - [Flatten, []] 
   - [Linear, [1024]] # 
-  - [ReLU, []] # 26
+  - [ReLU, []] # 
   - [Linear, [512]] # 
-  - [ReLU, []] # 26
+  - [ReLU, []] # 
   - [Linear, [10]] #  
   - [Softmax, []]
 augment:
   img_shape: [64, 64]
-  use_bbox: false
-  reverse: false
+  use_bbox: true
+  reverse: true
   aug: false
+  dilation: false
+  opening: false
+  mixup: 0.5
   cache: true
 lr_scheduler:
   factor: 0.7

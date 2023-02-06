@@ -46,6 +46,23 @@ def one_hot_encoding(y, num_class):
     label[np.arange(bs), y] = 1
     return label
 
+
+def mixup(images, labels, num_classes=10):
+    changed_indices = np.random.permutation(images.shape[0])
+    # alpha beta values from https://github.com/ultralytics/yolov5/issues/3380
+    lam = np.random.beta(8.0, 8.0) 
+
+    changed_images = images[changed_indices]
+    changed_labels = labels[changed_indices]
+
+    labels = one_hot_encoding(labels, num_classes)
+    changed_labels = one_hot_encoding(changed_labels, num_classes)
+
+    images = lam * images + (1 - lam) * changed_images
+    labels = lam * labels + (1 - lam) * changed_labels
+    return images, labels
+
+
 def set_seed(seed):
     np.random.seed(seed)
 
