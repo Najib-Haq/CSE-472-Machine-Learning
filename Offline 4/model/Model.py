@@ -76,6 +76,7 @@ class Model:
         if pretrained:
             if params[0]['kernels'].shape != self.layers[0].state_dict['kernels'].shape:
                 print("Pretrained model input shape does not match model shape")
+                # pretrained on grayscale images and train on rgb ones
                 b = np.zeros(self.layers[0].state_dict['kernels'].shape)
                 b[:, 0, :, :] = params[0]['kernels'][:, 0, :, :]
                 b[:, 1, :, :] = params[0]['kernels'][:, 0, :, :]

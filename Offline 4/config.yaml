@@ -5,7 +5,7 @@ output_dir: 'output'
 train_batch: 128
 valid_batch: 128
 lr: 0.001
-debug: false
+debug: true
 model:
 model:
   - [Conv2D, [3, 6, 5, 1, 0]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
@@ -24,13 +24,15 @@ model:
 checkpoint_path: "ModelLenet_reverse_E54.npy"
 gt_csv: "numta/training-e.csv"
 augment:
-  img_shape: [28, 28]
-  use_bbox: false
-  reverse: false
+  img_shape: [48, 48]
+  use_bbox: true
+  reverse: true
   aug: false
-  dilation: false
+  dilation: true
   opening: false
   mixup: 0.0
+  contour_cutout_prob: 1.0
+  contour_cutout_number: 5
   cache: true
 lr_scheduler:
   factor: 0.7
