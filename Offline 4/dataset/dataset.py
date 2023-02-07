@@ -64,7 +64,7 @@ class Dataset:
         if self.cache:
             image = self.cache_data[path]
         else:
-            image = self.read_image(image, path)
+            image = self.change_image(path)
 
         # use probabilistic augmentation
         if self.config['aug'] and self.mode == 'train': image = self.augment(image)

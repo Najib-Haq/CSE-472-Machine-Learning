@@ -24,6 +24,8 @@ if __name__ == "__main__":
     # make model
     model = Model(config)
     print(model)
+    if config['checkpoint_path']:
+        model.load_model(config['checkpoint_path'])
 
     # make dataset
     train_df, valid_df = split_dataset(config['data_dir'], validation_percentage=0.2)

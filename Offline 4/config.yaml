@@ -5,29 +5,28 @@ output_dir: 'output'
 train_batch: 128
 valid_batch: 128
 lr: 0.001
-debug: true
+debug: false
 model:
-  - [Conv2D, [3, 16, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+model:
+  - [Conv2D, [3, 6, 5, 1, 0]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
   - [ReLU, []] 
   - [MaxPool2D, [2, 2]]
-  - [Conv2D, [16, 32, 3, 1, 1]] 
+  - [Conv2D, [6, 16, 5, 1, 0]] 
   - [ReLU, []] 
   - [MaxPool2D, [2, 2]]
-  - [Conv2D, [32, 32, 3, 1, 1]] 
-  - [ReLU, []]
-  - [MaxPool2D, [2, 2]] 
-  - [Flatten, []] 
-  - [Linear, [1024]] # 
-  - [ReLU, []] # 
-  - [Linear, [512]] # 
-  - [ReLU, []] # 
+  - [Flatten, []] # 64 * 5 * 5
+  - [Linear, [120]] # 
+  - [ReLU, []] # 26
+  - [Linear, [84]] # 
+  - [ReLU, []] # 26
   - [Linear, [10]] #  
   - [Softmax, []]
-checkpoint_path: false
+checkpoint_path: "ModelLenet_reverse_E54.npy"
+gt_csv: "numta/training-e.csv"
 augment:
-  img_shape: [64, 64]
-  use_bbox: true
-  reverse: true
+  img_shape: [28, 28]
+  use_bbox: false
+  reverse: false
   aug: false
   dilation: false
   opening: false
@@ -45,22 +44,107 @@ name: 'Model1-Baseline'
 comment: 'Model1-64x64'
 exp: 'Baseline'
 
-
-
+# epochs: 10
+# num_class: 10
+# data_dir: 'numta'
+# output_dir: 'output'
+# train_batch: 128
+# valid_batch: 128
+# lr: 0.001
+# debug: false
 # model:
-#   - [Conv2D, [3, 32, 5, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
-#   - [ReLU, []] # (64 - 5)/1 + 1 = 60
-#   - [Conv2D, [32, 64, 5, 2]] # 26
+#   - [Conv2D, [3, 16, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [16, 32, 3, 1, 1]] 
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [32, 32, 3, 1, 1]] 
 #   - [ReLU, []] # 26
 #   - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
-#   - [Conv2D, [64, 64, 3, 1]] # (13 - 3) + 1 = 11
-#   - [ReLU, []] # 11
-#   - [Conv2D, [64, 64, 3, 2]] # (11 - 3)//2 + 1 = 5
-#   - [ReLU, []] # 5
 #   - [Flatten, []] # 64 * 5 * 5
-#   - [Linear, [1600, 1024]] # 
-#   - [ReLU, []] # 20
-#   - [Linear, [1024, 512]]
-#   - [ReLU, []] # 20
-#   - [Linear, [512, 10]]
+#   - [Linear, [1024]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [512]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [10]] #  
 #   - [Softmax, []]
+# checkpoint_path: "ModelLenet_reverse_E54.npy"
+# gt_csv: "numta/training-e.csv"
+# augment:
+#   img_shape: [64, 64]
+#   use_bbox: true
+#   reverse: false
+#   aug: false
+#   dilation: true
+#   opening: false
+#   mixup: 0.0
+#   cache: true
+# lr_scheduler:
+#   factor: 0.7
+#   patience: 2
+# use_wandb: false
+# wandb:
+#   project: "cse472_cnn_scratch"
+#   entity: "nexh98" # anonymous
+# notebook: ''
+# name: 'Model1-Baseline'
+# comment: 'Model1-64x64'
+# exp: 'Baseline'
+
+
+# model 2
+# model:
+#   - [Conv2D, [1, 6, 5, 1, 0]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [6, 16, 5, 1, 0]] 
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [16, 32, 3, 1, 1]] 
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Flatten, []] # 64 * 5 * 5
+#   - [Linear, [120]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [84]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [10]] #  
+#   - [Softmax, []]
+# augment:
+#   img_shape: [48, 48]
+#   use_bbox: false
+#   reverse: false
+#   aug: false
+#   dilation: false
+#   opening: false
+#   mixup: 0.0
+#   cache: true
+
+# model 3
+# model:
+#   - [Conv2D, [1, 16, 3, 1, 1]] # in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [16, 32, 3, 1, 1]] 
+#   - [ReLU, []] 
+#   - [MaxPool2D, [2, 2]]
+#   - [Conv2D, [32, 32, 3, 1, 1]] 
+#   - [ReLU, []] # 26
+#   - [MaxPool2D, [2, 2]] # kernel_size, stride=1 -> 13
+#   - [Flatten, []] # 64 * 5 * 5
+#   - [Linear, [1024]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [512]] # 
+#   - [ReLU, []] # 26
+#   - [Linear, [10]] #  
+#   - [Softmax, []]
+# augment:
+#   img_shape: [48, 48]
+#   use_bbox: false
+#   reverse: false
+#   aug: false
+#   dilation: false
+#   opening: false
+#   mixup: 0.0
+#   cache: true

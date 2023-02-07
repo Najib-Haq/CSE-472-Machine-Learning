@@ -17,7 +17,7 @@ def parse_arguments():
     with open('config.yaml') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
     config['data_dir'] = sys_args[1]
-    config['gt_csv'] = sys_args[2] if len(sys_args) > 2 else False
+    # config['gt_csv'] = sys_args[2] if len(sys_args) > 2 else False
     return config
 
 
@@ -66,10 +66,6 @@ def show_results(pred_df, gt_df):
     print(f"Accuracy: {acc}")
     print(f"Macro F1: {macro_f1_score}")
     # print(f"Confusion Matrix: {cm_score}")
-    
-
-
-
 
 
 if __name__ == "__main__":
