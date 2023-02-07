@@ -70,9 +70,18 @@ class Model:
         with open(path, "wb") as f:
             pickle.dump(params, f)
 
-    def load_model(self, path):
+    def load_model(self, path, pretrained=False):
         with open(path, "rb") as f:
             params = pickle.load(f)
+        if pretrained:
+            if params[0]['kernels'].shape != self.layers[0].state_dict['kernels'].shape:
+                print("Pretrained model input shape does not match model shape")
+                b = np.zeros(self.layers[0].state_dict['kernels'].shape)
+                b[:, 0, :, :] = params[0]['kernels'][:, 0, :, :]
+                b[:, 1, :, :] = params[0]['kernels'][:, 0, :, :]
+                b[:, 2, :, :] = params[0]['kernels'][:, 0, :, :]
+                print(b.shape, params[0]['kernels'].shape)
+                params[0]['kernels'] = b
         for i, layer in enumerate(self.layers):
             layer.state_dict = params[i]
         print("Successfully loaded from " + path)
