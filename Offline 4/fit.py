@@ -104,7 +104,7 @@ def fit_model(model, train_loader, val_loader, config, wandb_run):
 
         if val_f1 > best_macro_f1:
             best_macro_f1 = val_f1
-            model.save_model(f"{config['output_dir']}/best_model_E{epoch}.npy")
+            model.save_model(f"{config['output_dir']}/best_model_E{epoch}.npy", epoch, config['wandb_id'], optimizer.lr)
 
         loggings = update_loggings(loggings, epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1)
         if config['use_wandb']: update_wandb(epoch, train_loss, train_acc, train_f1, val_loss, val_acc, val_f1, optimizer.lr)

@@ -20,8 +20,8 @@ model:
   - [ReLU, []] # 26
   - [Linear, [10]] #  
   - [Softmax, []]
-checkpoint_path: "ModelLenet_reverse_E54.npy"
-resume: false
+checkpoint_path: "output/best_model_E1.npy"
+resume: true
 gt_csv: "numta/training-e.csv"
 augment:
   img_shape: [48, 48]

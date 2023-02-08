@@ -81,7 +81,9 @@ class Model:
     def load_model(self, path, pretrained=False):
         with open(path, "rb") as f:
             params = pickle.load(f)
-            if isinstance(params, dict): params = params['state_dict']
+            if isinstance(params, dict): 
+                print("Loading Epochs: ", params['epoch'], " LR: ", params['lr'], " W&B ID: ", params['wandb_id'])
+                params = params['state_dict']
         if pretrained:
             if params[0]['kernels'].shape != self.layers[0].state_dict['kernels'].shape:
                 print("Pretrained model input shape does not match model shape")

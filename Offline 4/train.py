@@ -20,7 +20,8 @@ if __name__ == "__main__":
     print(config)
     os.makedirs(config['output_dir'], exist_ok=True)
     wandb_run = wandb_init(config) if config['use_wandb'] else None
-
+    config['wandb_id'] = wandb_run.id if config['use_wandb'] else None
+    
     # make model
     model = Model(config)
     print(model)
