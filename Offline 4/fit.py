@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
+import pickle
 
 from model.Optimizer import SGD
 from model.Loss import CrossEntropyLoss
@@ -79,10 +80,19 @@ def fit_model(model, train_loader, val_loader, config, wandb_run):
         'val_f1': []
     }
 
-    optimizer = SGD(lr=config['lr'])
+    
+    if config['resume']:
+        with open(config['checkpoint_path'], "rb") as f:
+            prev_run = pickle.load(f)
+            epoch = prev_run['epoch']
+            lr = prev_run['lr']
+
+    optimizer = SGD(lr=lr if config['resume'] else config['lr'])
     scheduler = ReduceLROnPlateau(factor=config['lr_scheduler']['factor'], patience=config['lr_scheduler']['patience'], verbose=1)
 
-    for epoch in range(config['epochs']):
+
+    start_epoch = epoch if config['resume'] else 0
+    for epoch in range(start_epoch, config['epochs']):
         model, train_loss, train_acc, train_f1 = train_one_epoch(model, train_loader, config, optimizer)
         val_loss, val_acc, val_f1 = validate_one_epoch(model, val_loader, config)
 

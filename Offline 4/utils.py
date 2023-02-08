@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import pickle
 
 
 def get_near_duplicate_removed_train():
@@ -138,12 +139,17 @@ def wandb_init(config):
         wandb.login(anonymous="must", relogin=True)
         run = wandb.init(anonymous="allow")
     else:
+        if config['resume']:
+            with open(config['checkpoint_path'], "rb") as f:
+                wandb_id = pickle.load(f)['wandb_id']
+
         run = wandb.init(
             project=config['wandb']['project'], 
             entity=config['wandb']['entity'],
             name=config['name'],
             config=config, 
             resume="allow",
+            id=wandb_id if config['resume'] else None
         )
     return run
 

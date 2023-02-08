@@ -63,16 +63,25 @@ class Model:
         return model
 
 
-    def save_model(self, path):
+    def save_model(self, path, epoch, wandb_id, cur_lr):
         params = []
         for layer in self.layers:
             params.append(layer.state_dict)
+
+        save_data = {
+            'state_dict': params,
+            'epoch': epoch,
+            'wandb_id': wandb_id,
+            'lr': cur_lr,
+        }
+
         with open(path, "wb") as f:
-            pickle.dump(params, f)
+            pickle.dump(save_data, f)
 
     def load_model(self, path, pretrained=False):
         with open(path, "rb") as f:
             params = pickle.load(f)
+            if isinstance(params, dict): params = params['state_dict']
         if pretrained:
             if params[0]['kernels'].shape != self.layers[0].state_dict['kernels'].shape:
                 print("Pretrained model input shape does not match model shape")
