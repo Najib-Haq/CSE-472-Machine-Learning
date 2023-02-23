@@ -9,7 +9,7 @@ This repository contains assignments for the CSE 472: Machine Learning Sessional
 
 
 ## Note
-Please Visit -[this repo]() for the complete organized version of Offline 4: CNN From Scratch. This implementation was rearranged to fit submission guidelines in this version. 
+Please Visit [this repo](https://github.com/Najib-Haq/Vectorized-CNN-from-scratch) for the complete organized version of Offline 4: CNN From Scratch. This implementation was rearranged to fit submission guidelines in this version. 
 
 
 
